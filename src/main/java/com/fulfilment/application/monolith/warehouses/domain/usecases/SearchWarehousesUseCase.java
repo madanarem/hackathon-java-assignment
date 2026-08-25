@@ -7,10 +7,12 @@ import com.fulfilment.application.monolith.warehouses.domain.ports.WarehouseStor
 import jakarta.enterprise.context.ApplicationScoped;
 import java.util.List;
 import java.util.Set;
+import org.jboss.logging.Logger;
 
 @ApplicationScoped
 public class SearchWarehousesUseCase implements SearchWarehousesOperation {
 
+  private static final Logger LOGGER = Logger.getLogger(SearchWarehousesUseCase.class);
   private static final Set<String> SORTABLE_FIELDS = Set.of("createdAt", "capacity");
   private static final int MAX_PAGE_SIZE = 100;
   private static final int DEFAULT_PAGE_SIZE = 10;
@@ -38,6 +40,10 @@ public class SearchWarehousesUseCase implements SearchWarehousesOperation {
         new WarehouseSearchCriteria(
             criteria.location(), criteria.minCapacity(), criteria.maxCapacity(), sortBy, sortOrder, page, pageSize);
 
-    return warehouseStore.search(normalized);
+    List<Warehouse> results = warehouseStore.search(normalized);
+    LOGGER.debugf(
+        "Search returned %d warehouse(s) for location=%s, minCapacity=%s, maxCapacity=%s, page=%d, pageSize=%d",
+        results.size(), criteria.location(), criteria.minCapacity(), criteria.maxCapacity(), page, pageSize);
+    return results;
   }
 }

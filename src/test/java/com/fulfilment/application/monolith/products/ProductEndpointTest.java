@@ -33,4 +33,66 @@ public class ProductEndpointTest {
         .statusCode(200)
         .body(not(containsString("TONSTAD")), containsString("KALLAX"), containsString("BESTÅ"));
   }
+
+  // --- negative / error condition tests ---
+
+  @Test
+  public void testGetNonExistentProductReturns404() {
+    given().when().get("/product/99999").then().statusCode(404);
+  }
+
+  @Test
+  public void testCreateProductWithIdSetReturns422() {
+    given()
+        .contentType("application/json")
+        .body("{\"id\": 1, \"name\": \"INVALID\", \"stock\": 1}")
+        .when()
+        .post("/product")
+        .then()
+        .statusCode(422);
+  }
+
+  @Test
+  public void testUpdateProductWithMissingNameReturns422() {
+    given()
+        .contentType("application/json")
+        .body("{\"stock\": 5}")
+        .when()
+        .put("/product/2")
+        .then()
+        .statusCode(422);
+  }
+
+  @Test
+  public void testUpdateNonExistentProductReturns404() {
+    given()
+        .contentType("application/json")
+        .body("{\"name\": \"DOES-NOT-EXIST\", \"stock\": 5}")
+        .when()
+        .put("/product/99999")
+        .then()
+        .statusCode(404);
+  }
+
+  @Test
+  public void testDeleteNonExistentProductReturns404() {
+    given().when().delete("/product/99999").then().statusCode(404);
+  }
+
+  @Test
+  public void testCreateProductSucceedsAndIsRetrievable() {
+    int newId =
+        given()
+            .contentType("application/json")
+            .body("{\"name\": \"NEW-PRODUCT\", \"stock\": 7}")
+            .when()
+            .post("/product")
+            .then()
+            .statusCode(201)
+            .body("name", org.hamcrest.Matchers.equalTo("NEW-PRODUCT"))
+            .extract()
+            .path("id");
+
+    given().when().get("/product/" + newId).then().statusCode(200).body("name", org.hamcrest.Matchers.equalTo("NEW-PRODUCT"));
+  }
 }

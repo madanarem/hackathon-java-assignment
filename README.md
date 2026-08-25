@@ -46,11 +46,16 @@ This codebase follows **Hexagonal Architecture** (Ports & Adapters) with:
 
 ---
 
+## Testing & Coverage
+
+See [TESTING.md](TESTING.md) for the full testing strategy (unit/integration/error-case
+layers) and how to run the JaCoCo coverage report/gate (`./mvnw clean verify`).
+
 ## CI/CD
 
-Every push and pull request to `main` runs via GitHub Actions ([.github/workflows/ci.yml](.github/workflows/ci.yml)):
-unit tests (`./mvnw clean test`), the `WarehouseConcurrencyIT`/`WarehouseTestcontainersIT`
-integration tests, and a package build, with surefire reports uploaded as a build artifact.
+The recommended pipeline (unit + integration tests, package build, JaCoCo gate) is
+documented in [GITHUB_WORKFLOW.md](GITHUB_WORKFLOW.md), with the ready-to-use GitHub
+Actions YAML.
 
 ## Health Checks
 

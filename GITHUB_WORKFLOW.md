@@ -12,13 +12,15 @@ On every push and pull request targeting `main`, the pipeline:
 
 1. Checks out the repository.
 2. Sets up JDK 17 (Temurin) with Maven dependency caching.
-3. Runs the full unit test suite (`./mvnw clean test`).
+3. Runs the full unit test suite plus the JaCoCo coverage gate (`./mvnw clean verify`,
+   which fails the build if line coverage on the scoped bundle drops below 80% — see
+   [TESTING.md](TESTING.md) for what's scoped in/out and why).
 4. Runs the integration tests that aren't included by default
    (`WarehouseConcurrencyIT`, `WarehouseTestcontainersIT`).
 5. Packages the application (`./mvnw package -DskipTests`) to confirm it builds
    end-to-end.
-6. Uploads the Surefire test reports as a build artifact, even if a previous step
-   failed, so failures are easy to inspect from the Actions run.
+6. Uploads the Surefire and JaCoCo reports as build artifacts, even if a previous step
+   failed, so failures/coverage drops are easy to inspect from the Actions run.
 
 ## Workflow file
 
@@ -47,8 +49,8 @@ jobs:
           java-version: "17"
           cache: maven
 
-      - name: Run unit test suite
-        run: ./mvnw -B clean test
+      - name: Run unit test suite and JaCoCo coverage gate
+        run: ./mvnw -B clean verify
 
       - name: Run concurrency & Testcontainers integration tests
         run: ./mvnw -B test -Dtest=WarehouseConcurrencyIT,WarehouseTestcontainersIT
@@ -56,12 +58,14 @@ jobs:
       - name: Package application
         run: ./mvnw -B package -DskipTests
 
-      - name: Upload test reports
+      - name: Upload test and coverage reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: surefire-reports
-          path: target/surefire-reports/
+          name: test-and-coverage-reports
+          path: |
+            target/surefire-reports/
+            target/site/jacoco/
           if-no-files-found: ignore
 ```
 
