@@ -42,6 +42,23 @@ This codebase follows **Hexagonal Architecture** (Ports & Adapters) with:
 - **PostgreSQL** (via Docker or Quarkus Dev Services)
 - **JUnit 5** + **Testcontainers** + **Mockito**
 - **OpenAPI** (code generation for Warehouse API)
+- **SmallRye Health** (Kubernetes-style liveness/readiness probes)
+
+---
+
+## CI/CD
+
+Every push and pull request to `main` runs via GitHub Actions ([.github/workflows/ci.yml](.github/workflows/ci.yml)):
+unit tests (`./mvnw clean test`), the `WarehouseConcurrencyIT`/`WarehouseTestcontainersIT`
+integration tests, and a package build, with surefire reports uploaded as a build artifact.
+
+## Health Checks
+
+The app exposes standard Quarkus/SmallRye health endpoints, including the built-in datasource check:
+
+- `GET /q/health` — overall status
+- `GET /q/health/live` — liveness probe
+- `GET /q/health/ready` — readiness probe (includes DB connectivity)
 
 ---
 
